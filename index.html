@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=2.0">
 <title>五线谱学习工具</title>
 <style>
-    body { font-family: Arial, sans-serif; text-align: center; }
+    body { font-family: Arial, sans-serif; text-align: center;  background-color: rgb(189, 248, 189);}
     #staff { text-align: center; margin-top: 20px;}
     .key-container { position: relative; width: 420px; height: 200px; margin: 0 auto; }
     .white-key { 
@@ -35,33 +35,138 @@
     .correct { color: green; }
     .incorrect { color: red; }
     
+
+    input[type="text"] {
+  width: 3ch; /* ch单位根据字符“0”的宽度来设置大小 */
+  margin: 0 5px; /* 添加左右外边距 */
+}
+
+
+.progress-container {
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: flex-end; /* 纵向对齐到底部 */
+  height: 20px; /* 设置容器高度 */
+  margin: 0 auto; /* 上下无外边距，左右自动（居中） */
+}
+
+.progress-bar {
+  width: 2ch; /* 设置进度条宽度为两个字符宽 */
+  margin: 0 5px; /* 添加左右外边距 */
+  background-color: #4CAF50; /* 进度条颜色 */
+  text-align: center; /* 文字居中 */
+  transition: height 0.5s ease; /* 平滑过渡效果 */
+}
+
+#weights {
+
+    /* 设置字体颜色为浅绿色 */
+    color: rgb(189, 248, 189);
   
+   
+}
   
   </style>
 <script src="https://img1.ccgxk.com/ccgxk-oss/js/abc.js" type="text/javascript"></script>
 <script>
-  var notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  var notes = {
+  'C': 1, 'D': 1, 'E': 1, 'F': 1, 'G': 1, 'A': 1, 'B': 1
+};
   var currentNote = '';
   var timer;
   var abcNotation = "K: clef=treble\nL: 1/4\n";
-
-  function showNote() {
-    currentNote = notes[Math.floor(Math.random() * notes.length)];
-    var noteAbc = currentNote + "4"; // 4代表四分音符
-    ABCJS.renderAbc("staff", abcNotation + noteAbc);
-    document.getElementById('result').textContent = ''; // 清除之前的结果
-    document.getElementById('result').className = ''; // 清除之前的样式
+  var maxCorrectAnswers = 3; // 最大允许答对次数
+  var correctAnswers = { 'C': 0, 'D': 0, 'E': 0, 'F': 0, 'G': 0, 'A': 0, 'B': 0 }; // 记录每个音符答对的次数
+  var answerTime = 3000; // 默认答题时间为3秒
+  
+  function updateAnswerTime() {
+  answerTime = parseInt(document.getElementById('answerTime').value, 10) * 1000;
+  // 如果当前有正在进行的计时器，重置它
+  if (timer) {
+    clearTimeout(timer);
     timer = setTimeout(function() {
       showResult(false); // 显示结果
-    }, 3000); // 3秒
+    }, answerTime); // 使用新的答题时间
   }
+}
 
- function showResult(correct) {
+  function setMaxCorrect() {
+      var inputVal = document.getElementById('maxCorrectInput').value;
+      maxCorrectAnswers = parseInt(document.getElementById('maxCorrectInput').value, 10); // 将输入值转换为整数
+      // 重置所有音符的答对次数和权重
+      for (var note in correctAnswers) {
+        correctAnswers[note] = 0;
+        notes[note] = 1;
+      }
+      updateWeightsDisplay(); // 更新权重显示
+    }
+
+    function startExercise() {
+      // 开始练习的逻辑
+      showNote();
+    }
+
+    function stopExercise() {
+      // 结束练习的逻辑
+      clearTimeout(timer); // 清除计时器
+      document.getElementById('result').textContent = '练习结束';
+      document.getElementById('staff').innerHTML = ''; // 清空五线谱显示
+    }
+    
+
+
+  function adjustWeight(note) {
+  if (correctAnswers[note] < maxCorrectAnswers) {
+    correctAnswers[note]++; // 增加该音符答对的次数
+    notes[note] = (maxCorrectAnswers - correctAnswers[note]) / maxCorrectAnswers; // 按比例降低权重
+    updateWeightsDisplay(); // 更新权重显示
+  }
+}
+
+
+  function showNote() {
+  var weightedNotes = [];
+  for (var note in notes) {
+    var weight = notes[note] * 100; // 将权重转换为整数
+    for (var i = 0; i < weight; i++) {
+      weightedNotes.push(note);
+    }
+  }
+  
+  if (weightedNotes.length === 0) {
+    alert("所有音符练习完毕！");
+    return;
+  }
+  
+  currentNote = weightedNotes[Math.floor(Math.random() * weightedNotes.length)];
+  var noteAbc = currentNote + "4"; // 4代表四分音符
+  ABCJS.renderAbc("staff", abcNotation + noteAbc);
+  document.getElementById('result').textContent = ''; // 清除之前的结果
+  document.getElementById('result').className = ''; // 清除之前的样式
+  updateWeightsDisplay(); // 更新权重显示
+  timer = setTimeout(function() {
+  showResult(false); // 显示结果
+}, answerTime); // 使用answerTime变量作为延时时间
+}
+
+
+  function updateWeightsDisplay() {
+  var weightsDisplay = '';
+  for (var note in notes) {
+    weightsDisplay += note + ': ' + notes[note].toFixed(2) + ' '; // 显示两位小数的权重
+  }
+  document.getElementById('weights').textContent = weightsDisplay; // 更新权重显示
+  //updateProgressBars()
+}
+
+
+  function showResult(correct) {
   var resultElement = document.getElementById('result');
   if (correct) {
     resultElement.textContent = '正确';
-    resultElement.className = 'correct'; // 应用绿色样式
-    setTimeout(showNote, 1000); // 1秒后调用showNote函数
+    resultElement.className = 'correct';
+    adjustWeight(currentNote); // 调整权重
+    setTimeout(showNote, 1000); // 1秒后显示下一个音符
   } else {
     var displayNote = currentNote === 'B' ? 'H' : currentNote;
     alert("错误！正确答案是：" + displayNote); // 弹出消息框显示错误信息
@@ -71,26 +176,80 @@
   }
 }
 
-  function checkAnswer(note) {
+function checkAnswer(note) {
     clearTimeout(timer);
-    var correct = (note === 'H' && currentNote === 'B') || note === currentNote;
+    // 获取输入框中对应音符的值
+    var inputNote = document.getElementById('note' + note).value.toUpperCase(); // 将输入值转换为大写以进行比较
+    var correct = (inputNote === 'H' && currentNote === 'B') || inputNote === currentNote;
     showResult(correct); // 根据答案是否正确调用showResult函数
+}
+
+ /* 
+ function updateProgressBars() {
+  var totalHeight = 20; // 进度条容器的总高度
+  for (var note in notes) {
+    var progressBar = document.getElementById('progress' + note);
+    var heightPercentage = notes[note] * 100; // 将权重转换为百分比
+    progressBar.style.height = (totalHeight * heightPercentage / 100) + 'px'; // 设置进度条高度
   }
+ }
+ */
 
   window.onload = function() {
     var whiteKeys = document.querySelectorAll('.white-key');
     var thirdWhiteKey = whiteKeys[2]; // 获取第三个白键（E键）的位置
     var thirdWhiteKeyPosition = thirdWhiteKey.getBoundingClientRect().left;
-        var staff = document.getElementById('staff');
+    var staff = document.getElementById('staff');
     staff.style.marginLeft = thirdWhiteKeyPosition + 'px';
+    updateWeightsDisplay(); // 显示初始权重
+
+    document.getElementById('maxCorrectInput').value = maxCorrectAnswers
+    document.getElementById('maxCorrectInput').addEventListener('change', setMaxCorrect);
+    updateAnswerTime();
+
+    
 };
+
+
+
+
 
 </script>
 </head>
 <body>
+ 
 
     <h1>五线谱学习工具</h1>
-    <button onclick="showNote()">显示音符</button>
+    <label for="maxCorrectInput">要对几次:</label>
+    <input type="number" id="maxCorrectInput" value="5" min="1" max="10" step="1" onchange="setMaxCorrect()">
+    <label for="answerTime">答题时间（秒）:</label>
+    <input type="number" id="answerTime" value="3" min="1" max="10" step="1" onchange="updateAnswerTime()">
+    <button onclick="startExercise()">开始</button>
+    <button onclick="stopExercise()">结束</button>
+<br>
+    <label for="noteC">1:</label>
+<input type="text" id="noteC" value="C">
+
+<label for="noteD">2:</label>
+<input type="text" id="noteD" value="D">
+
+<label for="noteE">3:</label>
+<input type="text" id="noteE" value="E">
+
+<label for="noteF">4:</label>
+<input type="text" id="noteF" value="F">
+
+<label for="noteG">5:</label>
+<input type="text" id="noteG" value="G">
+
+<label for="noteA">6:</label>
+<input type="text" id="noteA" value="A">
+
+<label for="noteB">7:</label>
+<input type="text" id="noteB" value="B">
+
+<br>
+<span>H请输入B</span>
     
     <div id="staff" ></div>
     <div id="result"></div>
@@ -104,6 +263,22 @@
       <div class="key"><div class="white-key" onclick="checkAnswer('A')">A</div><div class="black-key" onclick="checkAnswer('A#')">A#</div></div>
       <div class="key"><div class="white-key" onclick="checkAnswer('B')">H</div></div>
     </div>
+
+
+    <!--<div class="progress-container">
+      <div class="progress-bar" id="progressC" style="height: 100%;">1</div>
+      <div class="progress-bar" id="progressD" style="height: 100%;">2</div>
+      <div class="progress-bar" id="progressE" style="height: 100%;">3</div>
+      <div class="progress-bar" id="progressF" style="height: 100%;">4</div>
+      <div class="progress-bar" id="progressG" style="height: 100%;">5</div>
+      <div class="progress-bar" id="progressA" style="height: 100%;">6</div>
+      <div class="progress-bar" id="progressB" style="height: 100%;">7</div>
+    </div>-->
+
+    <br>
+    <br>
+
+    <div id="weights"></div> 
     
     </body>
     </html>
