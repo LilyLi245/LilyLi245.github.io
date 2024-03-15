@@ -41,23 +41,6 @@
   margin: 0 5px; /* 添加左右外边距 */
 }
 
-
-.progress-container {
-  display: flex;
-  justify-content: center; /* 水平居中 */
-  align-items: flex-end; /* 纵向对齐到底部 */
-  height: 20px; /* 设置容器高度 */
-  margin: 0 auto; /* 上下无外边距，左右自动（居中） */
-}
-
-.progress-bar {
-  width: 2ch; /* 设置进度条宽度为两个字符宽 */
-  margin: 0 5px; /* 添加左右外边距 */
-  background-color: #4CAF50; /* 进度条颜色 */
-  text-align: center; /* 文字居中 */
-  transition: height 0.5s ease; /* 平滑过渡效果 */
-}
-
 #weights {
 
     /* 设置字体颜色为浅绿色 */
@@ -70,14 +53,15 @@
 <script src="https://img1.ccgxk.com/ccgxk-oss/js/abc.js" type="text/javascript"></script>
 <script>
   var notes = {
-  'C': 1, 'D': 1, 'E': 1, 'F': 1, 'G': 1, 'A': 1, 'B': 1
+    'C': 1, 'D': 1, 'E': 1, 'F': 1, 'G': 1, 'A': 1, 'B': 1
 };
   var currentNote = '';
   var timer;
-  var abcNotation = "K: clef=treble\nL: 1/4\n";
+  var abcNotation = "K: treble clef\nL: 1/4\n";
   var maxCorrectAnswers = 3; // 最大允许答对次数
   var correctAnswers = { 'C': 0, 'D': 0, 'E': 0, 'F': 0, 'G': 0, 'A': 0, 'B': 0 }; // 记录每个音符答对的次数
   var answerTime = 3000; // 默认答题时间为3秒
+
   
   function updateAnswerTime() {
   answerTime = parseInt(document.getElementById('answerTime').value, 10) * 1000;
@@ -135,6 +119,9 @@
   
   if (weightedNotes.length === 0) {
     alert("所有音符练习完毕！");
+    setTimeout(function() {
+      location.reload(); // 3秒后刷新页面
+    }, 500);
     return;
   }
   
@@ -183,17 +170,12 @@ function checkAnswer(note) {
     var correct = (inputNote === 'H' && currentNote === 'B') || inputNote === currentNote;
     showResult(correct); // 根据答案是否正确调用showResult函数
 }
+function updateClef() {
+  var selectedClef = document.getElementById('clef').value;
+  abcNotation = "K: " + selectedClef + " clef\nL: 1/4\n";
+  // 你可能需要在这里添加其他代码来重新渲染五线谱
+}
 
- /* 
- function updateProgressBars() {
-  var totalHeight = 20; // 进度条容器的总高度
-  for (var note in notes) {
-    var progressBar = document.getElementById('progress' + note);
-    var heightPercentage = notes[note] * 100; // 将权重转换为百分比
-    progressBar.style.height = (totalHeight * heightPercentage / 100) + 'px'; // 设置进度条高度
-  }
- }
- */
 
   window.onload = function() {
     var whiteKeys = document.querySelectorAll('.white-key');
@@ -206,7 +188,7 @@ function checkAnswer(note) {
     document.getElementById('maxCorrectInput').value = maxCorrectAnswers
     document.getElementById('maxCorrectInput').addEventListener('change', setMaxCorrect);
     updateAnswerTime();
-
+    document.getElementById('clef').addEventListener('change', updateClef);
     
 };
 
@@ -227,7 +209,7 @@ function checkAnswer(note) {
     <button onclick="startExercise()">开始</button>
     <button onclick="stopExercise()">结束</button>
 <br>
-    <label for="noteC">1:</label>
+  <label for="noteC">1:</label>
 <input type="text" id="noteC" value="C">
 
 <label for="noteD">2:</label>
@@ -250,6 +232,14 @@ function checkAnswer(note) {
 
 <br>
 <span>H请输入B</span>
+<br>
+<label for="clef">选择谱号:</label>
+<select id="clef">
+  <option value="treble">高音谱号</option>
+  <option value="bass">低音谱号</option>
+  <option value="alto">中音谱号</option>
+  <option value="tenor">次中音谱号</option>
+</select>
     
     <div id="staff" ></div>
     <div id="result"></div>
@@ -263,17 +253,6 @@ function checkAnswer(note) {
       <div class="key"><div class="white-key" onclick="checkAnswer('A')">A</div><div class="black-key" onclick="checkAnswer('A#')">A#</div></div>
       <div class="key"><div class="white-key" onclick="checkAnswer('B')">H</div></div>
     </div>
-
-
-    <!--<div class="progress-container">
-      <div class="progress-bar" id="progressC" style="height: 100%;">1</div>
-      <div class="progress-bar" id="progressD" style="height: 100%;">2</div>
-      <div class="progress-bar" id="progressE" style="height: 100%;">3</div>
-      <div class="progress-bar" id="progressF" style="height: 100%;">4</div>
-      <div class="progress-bar" id="progressG" style="height: 100%;">5</div>
-      <div class="progress-bar" id="progressA" style="height: 100%;">6</div>
-      <div class="progress-bar" id="progressB" style="height: 100%;">7</div>
-    </div>-->
 
     <br>
     <br>
