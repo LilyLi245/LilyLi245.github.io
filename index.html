@@ -55,6 +55,7 @@
   var notes = {
     'C': 1, 'D': 1, 'E': 1, 'F': 1, 'G': 1, 'A': 1, 'B': 1
 };
+
   var currentNote = '';
   var timer;
   var abcNotation = "K: treble clef\nL: 1/4\n";
@@ -201,13 +202,13 @@ function updateClef() {
 <body>
  
 
-    <h1>五线谱学习工具</h1>
-    <label for="maxCorrectInput">要对几次:</label>
+    <h1>Staff learning tool</h1>
+    <label for="maxCorrectInput">Be corrected times</label>
     <input type="number" id="maxCorrectInput" value="5" min="1" max="10" step="1" onchange="setMaxCorrect()">
-    <label for="answerTime">答题时间（秒）:</label>
+    <label for="answerTime">Answering time (seconds)</label>
     <input type="number" id="answerTime" value="3" min="1" max="10" step="1" onchange="updateAnswerTime()">
-    <button onclick="startExercise()">开始</button>
-    <button onclick="stopExercise()">结束</button>
+    <button onclick="startExercise()">Start</button>
+    <button onclick="stopExercise()">End</button>
 <br>
   <label for="noteC">1:</label>
 <input type="text" id="noteC" value="C">
@@ -233,7 +234,7 @@ function updateClef() {
 <br>
 <span>H请输入B</span>
 <br>
-<label for="clef">选择谱号:</label>
+<label for="clef">Select clef:</label>
 <select id="clef">
   <option value="treble">高音谱号</option>
   <option value="bass">低音谱号</option>
